@@ -1,0 +1,96 @@
+
+=======================
+LLM Project - Building 
+===========================
+
+Create an LLM that:
+    - Generates robotics simulation tasks/scenarios via inputting a prompt
+    - Ouput parameters to be passed into MATlab file
+    
+
+Diagram:
+
+Prompt: "Generate unprotected left turn w/ 
+2 incoming cars going no faster than 10m/s"
+
+                |
+                |
+                V 
+     Scenario Generator LLM 
+                |
+                |
+                V 
+            YAML file
+                |
+                |
+                V 
+             MATLab
+    
+
+Framework Structure:
+
+    1. Prompting Mechanism - proposes new tasks in natural language instruction + corresponding implementation in code
+    
+    2. Task Library - caches previously generated instruction code 
+    
+    3. Language-Conditioned Multi-Task Policy Training Procedure - leverages generated data to enhance task-level generalization 
+
+Operates in 2 Distinct Modes:
+
+    1. Goal-Directed - user has specific task or wants to design a task curriculum
+        - Adopting a top-down approach
+        - Takes desired task as input -> iterative generates related tasks
+
+    2. Explatory - no prior knowledge of task is available
+        - Framework explores beyond existing tasks
+        - Aims to establish a task-agnostic foundational policy 
+
+ Task Creator:
+
+    Goal:
+        - propose novel task desriptions + corresponding code
+        - broken down into scene generations + demonstration generations 
+    
+    1. Generate task description:
+
+        - Task name, assets, task summary
+    
+    2. Generate implementation 
+
+        - Adopt few-shot prompting for code generation in the pipeline
+
+    LLM is prompted to select reference tasks + codes from existing tasks in task library 
+
+        - Critical for LLM to know how to implement a task class
+        - i.e procedure of sampling asset URDFS + building scene -> adding spatial + language goals 
+    
+    Code Example:
+
+    class RainbowStack(task):
+        """Pick up blocks of seven different colours and stack them
+        on the stand in the order of the rainbow (red, orange, yellow,
+        green, blue, indigo, violet) from bottom to top."""
+
+        def reset(self, env):
+            super().reset(env)
+            # Add stand.
+            # . . .
+
+            # Add blocks. 
+            block_size = (0.04, 0.04, 0.04)
+            block_urdf = 'stacking/block.urdf' 
+            colours = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+            blocks = [] 
+            for colour in colours:
+                block_pose = sefl.get_random_pose(env, block_size)
+                block_id = env.add_object(block_urdf, block_pose, colour=colour)
+                blocks.append(block_id)
+
+            # Goal: stack the blocks on the stand in the order of the rainbow from bottom to top.
+            for i in range(len(blocks)):
+                sef.add_goal(objs=[blocks[i]], matches=np.ones((1,1)),
+                        targ_poses=[stand_pose], replace=False,
+                        rotations=True, metric='pose',
+                        language_goal=self.lang_template)
+
+

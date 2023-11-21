@@ -1,0 +1,61 @@
+scenario:
+  name: Unprotected Left Turn with 2 Incoming Fast Cars
+  description: |
+    A test scenario where the ego-vehicle attempts to make an unprotected left turn at an intersection while two oncoming vehicles 
+    are approaching at high speeds.
+
+environment:
+  time_of_day: 14:00
+  weather: Clear
+
+map:
+  intersection_type: Cross
+  lanes: 
+    - type: Straight
+      direction: North-South
+    - type: Straight
+      direction: East-West
+    - type: Left-Turn
+      direction: West-East
+
+vehicles:
+  - vehicle_id: ego-vehicle
+    type: Car
+    initial_position: [0, -20]
+    initial_speed: 0 mph
+    turning: Left
+    route: Start from West, make a left turn to South
+    behavior: 
+      yield: False
+  
+  - vehicle_id: oncoming_car_1
+    type: Sedan
+    initial_position: [-40, 0]
+    initial_speed: 50 mph
+    direction: East
+    behavior:
+      ignores_traffic_signals: True
+
+  - vehicle_id: oncoming_car_2
+    type: Sports
+    initial_position: [-60, 0]
+    initial_speed: 55 mph
+    direction: East
+    behavior:
+      ignores_traffic_signals: True
+
+traffic_signals:
+  default_state: Green_for_North_South
+  timing: 
+    - state: Green_for_North_South
+      duration: 60 seconds
+    - state: Green_for_East_West
+      duration: 60 seconds
+
+test_expectations:
+  safety:
+    - No collision between ego-vehicle and oncoming cars
+    - Ego-vehicle waits for a safe gap before making a turn
+  legality:
+    - Ego-vehicle obeys traffic signals
+    - Oncoming vehicles are speeding, test system monitors speed limit violations
