@@ -1,0 +1,74 @@
+simulation:
+  name: "Car Acceleration at Stop Light Test"
+  description: "Simulation of two cars speeding up from a stop light to test acceleration and traffic light response."
+
+environment:
+  type: "urban"
+  road_conditions: "dry"
+  traffic_density: "moderate"
+  weather: "clear"
+  
+traffic_light:
+  id: "TL-001"
+  location: "Intersection of 3rd and Main"
+  timing:
+    red: 55
+    yellow: 5
+    green: 60
+
+vehicles:
+  - id: "Car1"
+    type: "sedan"
+    model: "ModelX"
+    color: "red"
+    starting_position:
+      x: 0
+      y: 0
+    initial_state:
+      speed: 0
+    max_acceleration: 3.6  # in m/s^2
+    driver_profile: "aggressive"
+
+  - id: "Car2"
+    type: "sports_car"
+    model: "Speedster"
+    color: "blue"
+    starting_position:
+      x: 0
+      y: 2
+    initial_state:
+      speed: 0
+    max_acceleration: 4.2  # in m/s^2
+    driver_profile: "competitive"
+
+sensors:
+  - type: "speedometer"
+    accuracy: 0.1
+    update_interval: 0.5
+  - type: "traffic_light_camera"
+    location: "Above the intersection"
+    field_of_view: "180 degrees"
+
+test_parameters:
+  time_frame: "0 to 60 seconds"
+  recording: 
+    speed_data: "every second"
+    position_tracking: "every 0.5 seconds"
+
+output:
+  - type: "graph"
+    format: "speed vs time"
+  - type: "table"
+    content: "vehicle id, time at each checkpoint, final speed"
+
+execution_control:
+  start_condition: "traffic_light == green"
+  end_condition: "both vehicles reach speed limit or red light, whichever comes first"
+
+validation_criteria:
+  success:
+    - "Both vehicles reach 50% of the speed limit within 10 seconds of green light"
+    - "No red light violation by either vehicle"
+  failure:
+    - "Any vehicle violates traffic light signal"
+    - "Any vehicle does not reach expected acceleration within the given time frame"
